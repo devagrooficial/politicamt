@@ -41,6 +41,18 @@ export const theme = atom(
     : "dark"
 );
 
+// ── Sincronização imediata no primeiro carregamento ──────────────────────────
+// `theme.listen` só dispara em mudanças futuras; na hidratação inicial o DOM
+// já precisa ter a classe correta antes que qualquer componente monte.
+if (typeof window !== "undefined") {
+  const current = theme.get();
+  if (current === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
+
 theme.listen((value) => {
   if (typeof window !== "undefined") {
     if (value === "dark") {

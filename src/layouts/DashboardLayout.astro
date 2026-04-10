@@ -13,6 +13,14 @@ const { title, mapStyle } = Astro.props;
 <!doctype html>
 <html lang="pt-BR">
   <head>
+    <!-- Anti-FOUC: aplica a classe dark ANTES do primeiro paint.
+         is:inline → Astro não processa, executa sync no <head>. -->
+    <script is:inline>
+      (function () {
+        const t = localStorage.getItem('theme') || 'dark';
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Dashboard de Roteamento Logístico — MowGrid" />
