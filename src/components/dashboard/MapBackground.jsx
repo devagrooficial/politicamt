@@ -1,9 +1,9 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import Map, { Marker, Popup, Source, Layer } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Users } from "lucide-react";
+import { Users, UserCheck, Target, AlertTriangle, MapPin, Phone } from "lucide-react";
 import { useStore } from "@nanostores/react";
-import { theme } from "@/lib/store";
+import { theme, selectedMapCity } from "@/lib/store";
 import { rankingMT } from "@/lib/mockData";
 
 const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
@@ -80,18 +80,29 @@ const heatCircleLayer = {
 };
 
 // ─── Pin visual ───────────────────────────────────────────────────────────────
-function CityPin({ city, isActive, onClick }) {
+function CityPin({ city, isActive, onPinClick }) {
   const colorClass = PIN_STYLES[city.status] ?? PIN_STYLES["não iniciado"];
 
   return (
-    <button
-      onClick={() => onClick(city)}
-      aria-label={`${city.id}. ${city.name}`}
-      className="group relative focus:outline-none"
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`${city.id}. ${city.name} — ver dossiê`}
+      className="group relative cursor-pointer focus:outline-none"
+      onClick={(e) => {
+        e.stopPropagation();        // bloqueia o onClick do mapa (fecha popup)
+        onPinClick(city);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation();
+          onPinClick(city);
+        }
+      }}
     >
       {/* Pulso para cidades em andamento */}
       {city.status === "em andamento" && (
-        <span className="absolute inset-0 rounded-full bg-amber-400/40 animate-ping" />
+        <span className="absolute inset-0 rounded-full bg-amber-400/40 animate-ping pointer-events-none" />
       )}
 
       <div
@@ -122,52 +133,128 @@ function CityPin({ city, isActive, onClick }) {
             : "border-t-slate-700",
         ].join(" ")}
       />
-    </button>
+    </div>
   );
 }
 
-// ─── Popup de detalhes ────────────────────────────────────────────────────────
-const BADGE_POPUP = {
-  "contabilizado": "bg-lime-500/15 text-lime-600 dark:text-lime-400 border border-lime-500/30",
-  "em andamento":  "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30",
-  "não iniciado":  "bg-slate-200 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600/30",
+// ─── Badge de status ──────────────────────────────────────────────────────────
+const STATUS_BADGE = {
+  "contabilizado": "bg-lime-500/20 text-lime-400 border border-lime-500/40",
+  "em andamento":  "bg-amber-500/20 text-amber-400 border border-amber-500/40",
+  "não iniciado":  "bg-slate-600/50 text-slate-400 border border-slate-600/40",
 };
 
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+const STATUS_LABEL = {
+  "contabilizado": "Contabilizado",
+  "em andamento":  "Em andamento",
+  "não iniciado":  "Não iniciado",
+};
+
+// ─── Linha de informação do dossiê ────────────────────────────────────────────
+function InfoRow({ icon: Icon, label, value, multiline = false }) {
+  return (
+    <div className="flex gap-3 items-start">
+      <div className="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-700/60 flex items-center justify-center">
+        <Icon className="w-3.5 h-3.5 text-slate-400" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-0.5">{label}</p>
+        <p className={`text-sm text-slate-200 leading-snug ${multiline ? "" : "truncate"}`}>{value}</p>
+      </div>
+    </div>
+  );
 }
 
-function CityPopup({ city, onClose }) {
+// ─── Popup de dossiê pixel-perfect ───────────────────────────────────────────
+function DossierPopup({ city, onClose }) {
   return (
     <Popup
       longitude={city.lng}
       latitude={city.lat}
       anchor="bottom"
-      offset={[0, -50]}
+      offset={[0, -46]}
       onClose={onClose}
       closeButton={false}
       closeOnClick={false}
-      className="!p-0 !bg-transparent !shadow-none"
-      maxWidth="220px"
+      className="city-dossier-popup"
+      maxWidth="360px"
+      style={{ zIndex: 50 }}
     >
       <div
-        className="rounded-xl border border-slate-200 dark:border-[#334155] shadow-2xl overflow-hidden bg-white dark:bg-[#0f172a]"
+        className="
+          bg-[#0f172a]/97 backdrop-blur-xl
+          border border-slate-700/80
+          rounded-2xl overflow-hidden
+          shadow-[0_25px_60px_rgba(0,0,0,0.7)]
+          min-w-[320px] w-[340px]
+          text-white
+        "
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-3 py-2 border-b border-slate-200 dark:border-[#334155] flex items-center justify-between gap-2">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500">
-            #{city.id} · MT
-          </span>
-          <span className={["text-[10px] font-semibold px-1.5 py-0.5 rounded-full", BADGE_POPUP[city.status]].join(" ")}>
-            {capitalize(city.status)}
-          </span>
-        </div>
-        <div className="px-3 py-3">
-          <p className="font-bold text-sm text-slate-900 dark:text-white leading-tight">{city.name}</p>
-          <div className="flex items-center gap-1.5 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <Users className="h-3.5 w-3.5 shrink-0" />
+        {/* ── Header ── */}
+        <div className="px-5 pt-5 pb-4 border-b border-slate-700/60">
+          <div className="flex items-start justify-between gap-3 mb-1">
+            <h3 className="text-xl font-bold text-white leading-tight">{city.name}</h3>
+            <span className={`shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide ${STATUS_BADGE[city.status]}`}>
+              {STATUS_LABEL[city.status]}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <MapPin className="w-3 h-3" />
+            <span>Mato Grosso · #{city.id}</span>
+            <span className="mx-1 text-slate-600">·</span>
+            <Users className="w-3 h-3" />
             <span>{city.voters} eleitores</span>
           </div>
+        </div>
+
+        {/* ── Body: campos do dossiê ── */}
+        <div className="px-5 py-4 space-y-3.5">
+          <InfoRow
+            icon={UserCheck}
+            label="Responsável"
+            value={city.responsavel}
+          />
+          <InfoRow
+            icon={Users}
+            label="Voluntários"
+            value={`${city.voluntarios} ativos`}
+          />
+          <InfoRow
+            icon={Target}
+            label="Objetivo"
+            value={city.objetivo}
+            multiline
+          />
+          <InfoRow
+            icon={AlertTriangle}
+            label="Pontos de Atenção"
+            value={city.pontosAtencao}
+          />
+          <InfoRow
+            icon={MapPin}
+            label="Principal Ponto de Apoio"
+            value={city.pontoApoio}
+          />
+        </div>
+
+        {/* ── Footer: CTA ── */}
+        <div className="px-5 pb-5">
+          <button
+            className="
+              w-full flex items-center justify-center gap-2
+              border border-slate-600 rounded-xl
+              px-4 py-2.5
+              text-sm font-medium text-slate-300
+              hover:bg-slate-700/60 hover:text-white hover:border-slate-500
+              active:scale-[0.98]
+              transition-all duration-150
+            "
+            onClick={(e) => { e.stopPropagation(); }}
+          >
+            <Phone className="w-3.5 h-3.5" />
+            Falar com Responsável
+          </button>
         </div>
       </div>
     </Popup>
@@ -186,18 +273,19 @@ function CityPopup({ city, onClose }) {
 export default function MapBackground({
   initialViewState = INITIAL_VIEW,
 }) {
-  const currentTheme = useStore(theme);
-  const [activeCity, setActiveCity] = useState(null);
+  const currentTheme  = useStore(theme);
+  const activePopupCity = useStore(selectedMapCity);
 
   // Memoiza o GeoJSON para não re-computar a cada render
   const geojsonData = useMemo(() => buildGeoJSON(rankingMT), []);
 
   const handlePinClick = useCallback((city) => {
-    setActiveCity((prev) => (prev?.id === city.id ? null : city));
-  }, []);
+    // Toggle: se clicar no mesmo pin, fecha; caso contrário abre o novo
+    selectedMapCity.set(activePopupCity?.id === city.id ? null : city);
+  }, [activePopupCity]);
 
   const handleMapClick = useCallback(() => {
-    setActiveCity(null);
+    selectedMapCity.set(null);
   }, []);
 
   return (
@@ -226,17 +314,17 @@ export default function MapBackground({
           >
             <CityPin
               city={city}
-              isActive={activeCity?.id === city.id}
-              onClick={handlePinClick}
+              isActive={activePopupCity?.id === city.id}
+              onPinClick={handlePinClick}
             />
           </Marker>
         ))}
 
-        {/* ══ CAMADA 3: Popup do município selecionado ══ */}
-        {activeCity && (
-          <CityPopup
-            city={activeCity}
-            onClose={() => setActiveCity(null)}
+        {/* ══ CAMADA 3: Popup de Dossiê do município selecionado ══ */}
+        {activePopupCity && (
+          <DossierPopup
+            city={activePopupCity}
+            onClose={() => selectedMapCity.set(null)}
           />
         )}
       </Map>

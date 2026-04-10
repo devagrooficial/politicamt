@@ -16,6 +16,22 @@ import { atom } from "nanostores";
 export const selectedCandidate = atom("mauro");
 
 /**
+ * selectedMapCity
+ * Atom global que controla qual município está selecionado no mapa (popup aberto).
+ * Valor inicial: null (nenhum popup aberto).
+ *
+ * Consumir com:
+ *   import { useStore } from '@nanostores/react';
+ *   import { selectedMapCity } from '@/lib/store';
+ *   const city = useStore(selectedMapCity);
+ *
+ * Alterar com:
+ *   selectedMapCity.set(municipioObj); // abre popup
+ *   selectedMapCity.set(null);         // fecha popup
+ */
+export const selectedMapCity = atom<import("./mockData").MunicipioMT | null>(null);
+
+/**
  * theme
  * Controle de tema Light/Dark com persistência.
  */

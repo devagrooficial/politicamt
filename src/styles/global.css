@@ -194,3 +194,41 @@
     @apply font-sans;
   }
 }
+
+/* ─── Mapbox Popup: reset global (cobre qualquer popup do mapa) ──────────── */
+.mapboxgl-popup-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.mapboxgl-popup-tip {
+  display: none !important;
+}
+
+.mapboxgl-popup-close-button {
+  display: none !important;
+}
+
+/* ─── Scoped ao card de dossiê (garante z-index correto via CSS) ─────────── */
+.city-dossier-popup {
+  z-index: 50 !important;
+}
+
+.city-dossier-popup .mapboxgl-popup-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.city-dossier-popup .mapboxgl-popup-tip {
+  display: none !important;
+}
+
+.city-dossier-popup .mapboxgl-popup-close-button {
+  display: none !important;
+}
