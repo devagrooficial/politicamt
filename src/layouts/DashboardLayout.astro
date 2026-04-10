@@ -1,0 +1,46 @@
+---
+import MapBackground from "../components/dashboard/MapBackground.jsx";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  mapStyle?: string;
+}
+
+const { title, mapStyle } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dashboard de Roteamento Logístico — MowGrid" />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+
+  <body class="overflow-hidden bg-background text-foreground">
+    <!--
+      Estrutura de z-index:
+        z-0  → Mapa Mapbox (camada base, interativo)
+        z-10 → Overlays (painéis flutuantes via slot)
+
+      O pointer-events-none no wrapper dos overlays garante que
+      cliques em áreas vazias passem direto para o mapa.
+      Cada painel filho deve ter pointer-events-auto.
+    -->
+    <main class="relative w-screen h-screen overflow-hidden">
+      <!-- Camada 0: Mapa full-screen (renderizado apenas no cliente) -->
+      <MapBackground
+        client:only="react"
+        mapStyle={mapStyle}
+      />
+
+      <!-- Camada 1: Container dos overlays (pointer-events desabilitado no wrapper) -->
+      <div class="absolute inset-0 z-10 pointer-events-none">
+        <slot />
+      </div>
+    </main>
+  </body>
+</html>

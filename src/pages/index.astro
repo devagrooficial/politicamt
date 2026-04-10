@@ -1,17 +1,21 @@
 ---
-
+import DashboardLayout from "../layouts/DashboardLayout.astro";
+import KpiGrid from "../components/dashboard/KpiGrid.jsx";
+import ScheduleSidebar from "../components/dashboard/ScheduleSidebar.jsx";
+import BottomCrews from "../components/dashboard/BottomCrews.jsx";
+import Sidebar from "../components/dashboard/Sidebar.jsx";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<DashboardLayout title="Política Dashboard">
+  {/* z-30 — Cards superiores de KPI */}
+  <KpiGrid client:load />
+
+  {/* z-30 — Painel lateral direito: ranking de municípios */}
+  <ScheduleSidebar client:load />
+
+  {/* z-30 — Cards de crews no rodapé inferior esquerdo */}
+  <BottomCrews client:load />
+
+  {/* z-[999] — Sidebar ÚLTIMA no DOM: vence qualquer stacking context */}
+  <Sidebar client:load />
+</DashboardLayout>

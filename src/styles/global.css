@@ -46,6 +46,30 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* ── Tremor — Brand ── */
+    --color-tremor-brand-faint: var(--tremor-brand-faint);
+    --color-tremor-brand-muted: var(--tremor-brand-muted);
+    --color-tremor-brand-subtle: var(--tremor-brand-subtle);
+    --color-tremor-brand: var(--tremor-brand);
+    --color-tremor-brand-emphasis: var(--tremor-brand-emphasis);
+    --color-tremor-brand-inverted: var(--tremor-brand-inverted);
+
+    /* ── Tremor — Background ── */
+    --color-tremor-background-muted: var(--tremor-background-muted);
+    --color-tremor-background-subtle: var(--tremor-background-subtle);
+    --color-tremor-background-default: var(--tremor-background-default);
+    --color-tremor-background-emphasis: var(--tremor-background-emphasis);
+
+    /* ── Tremor — Ring ── */
+    --color-tremor-ring: var(--tremor-ring);
+
+    /* ── Tremor — Content ── */
+    --color-tremor-content-subtle: var(--tremor-content-subtle);
+    --color-tremor-content-default: var(--tremor-content-default);
+    --color-tremor-content-emphasis: var(--tremor-content-emphasis);
+    --color-tremor-content-strong: var(--tremor-content-strong);
+    --color-tremor-content-inverted: var(--tremor-content-inverted);
 }
 
 :root {
@@ -81,6 +105,27 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+
+    /* ── Tremor Light ── */
+    --tremor-brand-faint:      #eff6ff;
+    --tremor-brand-muted:      #bfdbfe;
+    --tremor-brand-subtle:     #93c5fd;
+    --tremor-brand:            #3b82f6;
+    --tremor-brand-emphasis:   #1d4ed8;
+    --tremor-brand-inverted:   #ffffff;
+
+    --tremor-background-muted:    #f9fafb;
+    --tremor-background-subtle:   #f3f4f6;
+    --tremor-background-default:  #ffffff;
+    --tremor-background-emphasis: #374151;
+
+    --tremor-ring: #e5e7eb;
+
+    --tremor-content-subtle:   #9ca3af;
+    --tremor-content-default:  #6b7280;
+    --tremor-content-emphasis: #374151;
+    --tremor-content-strong:   #111827;
+    --tremor-content-inverted: #ffffff;
 }
 
 .dark {
@@ -115,16 +160,37 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+
+    /* ── Tremor Dark ── */
+    --tremor-brand-faint:      #0B1229;
+    --tremor-brand-muted:      #172554;
+    --tremor-brand-subtle:     #1e40af;
+    --tremor-brand:            #3b82f6;
+    --tremor-brand-emphasis:   #60a5fa;
+    --tremor-brand-inverted:   #030712;
+
+    --tremor-background-muted:    #131A2B;
+    --tremor-background-subtle:   #1f2937;
+    --tremor-background-default:  #111827;
+    --tremor-background-emphasis: #d1d5db;
+
+    --tremor-ring: #1f2937;
+
+    --tremor-content-subtle:   #4b5563;
+    --tremor-content-default:  #6b7280;
+    --tremor-content-emphasis: #e5e7eb;
+    --tremor-content-strong:   #f9fafb;
+    --tremor-content-inverted: #000000;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
 }
